@@ -1,5 +1,7 @@
 import React from "react";
 import Lists from "./Lists";
+import CreateList from "./CreateList";
+
 
 class App extends React.Component {
     constructor(props) {
@@ -24,13 +26,91 @@ class App extends React.Component {
         })
       )
       .catch(console.log)
+    } 
+    //handle upadte
+    getList = (event,id) => {
+      this.setState (
+        {
+          singledate: {
+            title: "Loading…",
+            author: "Loading…"
+          }
+        },
+        () => {
+          fetch("http://localhost:5000/posts/" + id)
+            .then(res => res.json())
+            .then(result => {
+                this.setState({
+                singledata: { 
+                  title: result.title,
+                  author: result.author ? result.author :""
+                }
+              });
+            });
+          }
+        );
     }
+    //handle any incoming API calls
+    handleChange = (event) => {
+      let title = this.state.singledata.title;
+      let author = this.state.singledata.author;
+      if (event.target.name === "title") title = event.target.value;
+      else author = event.target.value;
 
+      this.setState  ({
+        singledata: {
+          title: title,
+          author: author
+        }
+      });
+    }
+    createList = () => {
+      fetch ("http://localhost:5000/posts/", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(this.state.singledata)
+      }).then(
+        this.setState({
+          singledata: {
+            title: "",
+            author: ""
+          }
+        })
+      )
+    }
+    updateList= (event,id) => {
+      fetch ("http://localhost:5000/posts/" + id , {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(this.state.singledata)
+      })
+        .then(res => res.json())
+        .then(result => {
+          this.setState({
+            singledata: {
+              title: "",
+              author: ""
+            }
+          });
+          this.getLists();
+        });
+    }
+    
     render(){
       const listTable = this.state.loading ? 
       (<span>Loading Date...Please be patient.</span>
       ):(
-      <Lists alldata={this.state.alldata} />
+      <Lists
+        alldata={this.state.alldata}
+        singledata={this.state.singledata}
+        getList={this.getList}
+        updateList={this.updateList}
+        handleChange={this.handleChange}
+        />
       );
       //JSX Elements (virtual) HTML look alike
       return (
@@ -42,6 +122,12 @@ class App extends React.Component {
               onClick={this.getLists}>
                 Get Lists
             </button>
+            <CreateList 
+              singledata={this.state.singledata}
+              handleChange={this.handleChange}
+              createList={this.createList}
+            ></CreateList>
+
           </span>
           {listTable}
         </div>
