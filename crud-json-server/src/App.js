@@ -99,6 +99,21 @@ class App extends React.Component {
           this.getLists();
         });
     }
+    deleteList = (event,id) => {
+      fetch ("http://localhost:5000/posts/" + id , {
+        method: "Delete",
+      })
+        .then(res => res.json())
+        .then(result => {
+          this.setState({
+            singledata: {
+              title: "",
+              author: ""
+            }
+          });
+          this.getLists();
+        });
+    }
     
     render(){
       const listTable = this.state.loading ? 
@@ -109,6 +124,7 @@ class App extends React.Component {
         singledata={this.state.singledata}
         getList={this.getList}
         updateList={this.updateList}
+        deleteList={this.deleteList}
         handleChange={this.handleChange}
         />
       );
